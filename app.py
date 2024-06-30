@@ -67,7 +67,7 @@ def statistics_film_rating():
     return jsonify(results)
 
 #test github
-
+#test github2
 
 if __name__ == '__main__':
     app.run(debug=True)
