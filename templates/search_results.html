@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="hu">
+<head>
+    <meta charset="utf-8">
+    <title>Film keresés eredményei</title>
+</head>
+<body>
+    <h1>Film keresés eredményei</h1>
+    {% if filmek %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Cím</th>
+                <th>Gyártási év</th>
+                <th>Megtekintés éve</th>
+                <th>Értékelés</th>
+                <th>Törlés</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for film in filmek %}
+            <tr>
+                <td>{{ film['Cím'] }}</td>
+                <td>{{ film['Gyártási év'] }}</td>
+                <td>{{ film['Megtekintés éve'] }}</td>
+                <td>{{ film['Értékelés'] }}</td>
+                <td><a href="{{ url_for('delete_film', cim=film['Cím']) }}">Törlés</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nincs találat a keresésre.</p>
+    {% endif %}
+</body>
+</html>

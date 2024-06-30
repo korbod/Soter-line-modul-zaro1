@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="hu">
+<head>
+    <meta charset="utf-8">
+    <title>Film Értékelő Program</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Film Értékelő Program</h1>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <section class="film-list">
+            <h2>Filmek listája</h2>
+            <div class="film-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cím</th>
+                            <th>Gyártási év</th>
+                            <th>Megtekintés éve</th>
+                            <th>Értékelés</th>
+                            <th>Törlés</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for film in filmek %}
+                        <tr>
+                            <td>{{ film['Cím'] }}</td>
+                            <td>{{ film['Gyártási év'] }}</td>
+                            <td>{{ film['Megtekintés éve'] }}</td>
+                            <td>{{ film['Értékelés'] }}</td>
+                            <td><a href="{{ url_for('delete_film', cim=film['Cím']) }}" class="delete-btn">Törlés</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="film-add">
+            <h2>Új film hozzáadása</h2>
+            <form action="{{ url_for('add_film') }}" method="post">
+                <label for="cim">Cím:</label>
+                <input type="text" id="cim" name="cim" required><br>
+                <label for="gyartasi_ev">Gyártási év:</label>
+                <input type="number" id="gyartasi_ev" name="gyartasi_ev" required><br>
+                <label for="megtekintes_ev">Megtekintés éve:</label>
+                <input type="number" id="megtekintes_ev" name="megtekintes_ev" required><br>
+                <label for="ertekeles">Értékelés:</label>
+                <input type="number" id="ertekeles" name="ertekeles" min="1" max="10" required><br>
+                <button type="submit">Hozzáadás</button>
+            </form>
+        </section>
+
+        <section class="statistics-year">
+            <h2>Statisztikák készítése év alapján</h2>
+            <form id="statistics-year-form">
+                <label for="evszam">Keresés gyártási év alapján:</label>
+                <input type="number" id="evszam" name="evszam" required>
+                <button type="submit">Keresés</button>
+            </form>
+            <div id="statistics-year-results" aria-live="polite"></div>
+        </section>
+
+        <section class="statistics-rating">
+            <h2>Statisztikák készítése értékelés alapján</h2>
+            <form id="statistics-rating-form">
+                <label for="ertekeles_keres">Keresés értékelés alapján:</label>
+                <input type="number" id="ertekeles_keres" name="ertekeles" min="1" max="10" required>
+                <button type="submit">Keresés</button>
+            </form>
+            <div id="statistics-rating-results" aria-live="polite"></div>
+        </section>
+    </div>
+
+    <script>
+        // AJAX request for statistics by year
+        $('#statistics-year-form').submit(function(event) {
+            event.preventDefault();
+            var evszam = $('#evszam').val();
+            $.ajax({
+                url: '/statistics_year',
+                type: 'GET',
+                data: { evszam: evszam },
+                success: function(data) {
+                    var html = '<h3>Találatok év alapján:</h3><ul>';
+                    if (data.length > 0) {
+                        data.forEach(function(film) {
+                            html += '<li>' + film['Cím'] + ' (' + film['Gyártási év'] + ')</li>';
+                        });
+                    } else {
+                        html += '<li>Nincs találat a keresésre.</li>';
+                    }
+                    html += '</ul>';
+                    $('#statistics-year-results').html(html);
+                },
+                error: function() {
+                    $('#statistics-year-results').html('<p>Hiba történt a keresés során. Kérjük, próbálja újra.</p>');
+                }
+            });
+        });
+
+
+        // AJAX request for statistics by rating
+        $('#statistics-rating-form').submit(function(event) {
+            event.preventDefault();
+            var ertekeles = $('#ertekeles_keres').val();
+            $.ajax({
+                url: '/statistics_rating',
+                type: 'GET',
+                data: { ertekeles: ertekeles },
+                success: function(data) {
+                    var html = '<h3>Találatok értékelés alapján:</h3><ul>';
+                    if (data.length > 0) {
+                        data.forEach(function(film) {
+                            html += '<li>' + film['Cím'] + ' (' + film['Értékelés'] + ')</li>';
+                        });
+                    } else {
+                        html += '<li>Nincs találat a keresésre.</li>';
+                    }
+                    html += '</ul>';
+                    $('#statistics-rating-results').html(html);
+                },
+                error: function() {
+                    $('#statistics-rating-results').html('<p>Hiba történt a keresés során. Kérjük, próbálja újra.</p>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
